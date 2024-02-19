@@ -4,15 +4,28 @@ const {Server} = require('socket.io');
 const cors = require('cors');
 const app = express();
 const server = createServer(app);
-
-app.use(cors({origin: 'http://localhost:3000'}))
+const isDev = app.settings.env === 'development'
+const URL = isDev ? 'http://localhost:3000' : 'http://localhost:3000'
+app.use(cors({origin: URL}))
 
 const io = new Server(server, {
-    cors: 'http://localhost:5000'
+    cors: URL
 })
 
 io.on("connection", (socket)=>{
     console.log("Server connected");
+
+    socket.on('beginPath', (args) => {
+        socket.broadcast.emit('beginPath', args)
+    })
+
+    socket.on('drawPath', (args) => {
+        socket.broadcast.emit('drawPath', args)
+    })
+
+    socket.on('changeConfig', (args) => {
+        socket.broadcast.emit('changeConfig', args)
+    })
 })
 app.get('/', (req, res) => {
   res.send('<h1>Hello world</h1>');
